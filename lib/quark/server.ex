@@ -1,4 +1,6 @@
 defmodule Quark.Server do
+  alias Quark.Parser
+
   require Logger
 
   def start(port \\ 4000) do
@@ -22,18 +24,17 @@ defmodule Quark.Server do
   end
 
   defp serve(client_socket) do
-    {method, path} = read_request_line(client_socket)
-    Logger.info("Received: #{inspect({method, path})}")
+    conn = Parser.parse(client_socket)
 
-    body = "Hello, Ignite!"
+    body =
+      case conn.path do
+        ~c"/fire" -> "Everything is on fire!"
+        _ -> "Hello, Ignite! You requested: #{conn.path}"
+      end
+
     response = build_response(200, body)
     :gen_tcp.send(client_socket, response)
     :gen_tcp.close(client_socket)
-  end
-
-  defp read_request_line(socket) do
-    {:ok, {:http_request, method, {:abs_path, path}, _version}} = :gen_tcp.recv(socket, 0)
-    {method, path}
   end
 
   defp build_response(status, body) do
