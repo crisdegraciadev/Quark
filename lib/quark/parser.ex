@@ -14,7 +14,7 @@ defmodule Quark.Parser do
 
   defp read_request_line(socket) do
     {:ok, {:http_request, method, {:abs_path, path}, _version}} = :gen_tcp.recv(socket, 0)
-    {method, path}
+    {method, List.to_string(path)}
   end
 
   defp read_headers(socket, acc \\ %{}) do

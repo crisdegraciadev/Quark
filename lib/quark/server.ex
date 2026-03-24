@@ -25,14 +25,9 @@ defmodule Quark.Server do
 
   defp serve(client_socket) do
     conn = Parser.parse(client_socket)
+    conn = App.Router.call(conn)
 
-    body =
-      case conn.path do
-        ~c"/fire" -> "Everything is on fire!"
-        _ -> "Hello, Ignite! You requested: #{conn.path}"
-      end
-
-    response = build_response(200, body)
+    response = build_response(conn.status, conn.resp_body)
     :gen_tcp.send(client_socket, response)
     :gen_tcp.close(client_socket)
   end
